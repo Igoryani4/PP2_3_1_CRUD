@@ -5,11 +5,13 @@ import dev.s2i.crudApp.dao.PersonDAO;
 import dev.s2i.crudApp.models.Person;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+
 
 @Controller
 @RequestMapping("/people")
@@ -17,15 +19,16 @@ public class PeopleController {
 
     private final PersonDAO personDAO;
 
+
     @Autowired
     public PeopleController(PersonDAO personDAO) {
         this.personDAO = personDAO;
     }
 
-
+    @Transactional
     @GetMapping()
     public String index(Model model) {
-        model.addAttribute("people", personDAO.people());
+        model.addAttribute("people", personDAO.getPeople());
         return "people/index";
     }
 

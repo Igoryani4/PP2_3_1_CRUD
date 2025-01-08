@@ -1,16 +1,27 @@
 package dev.s2i.crudApp.dao;
 
 import dev.s2i.crudApp.models.Person;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
 
+
+@Transactional
 @Component
 public class PersonDAO {
     private static int PERSON_ID;
-    private List<Person> people;
+    private final List<Person> people;
+
+    private EntityManagerFactory factory;
+    public PersonDAO() {
+        factory = Persistence.createEntityManagerFactory("hibernateDemo");
+    }
 
     {
         people = new ArrayList<>();
@@ -23,35 +34,55 @@ public class PersonDAO {
         people.add(new Person(++PERSON_ID,"James", "Bond","bond@mail.ru"));
     }
 
-    public List<Person> people() {
-        return people;
+    public List<Person> getPeople() {
+        EntityManager em = factory.createEntityManager();
+        try {
+            TypedQuery<Person> query = em.createQuery("SELECT p FROM Person p", Person.class);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
     }
 
     public Person getPersonById(int id) {
-        for (Person p : people) {
-            if (p.getId() == id) {
-                return p;
-            }
+        EntityManager em = factory.createEntityManager();
+        try {
+            return em.find(Person.class, id);
+        } finally {
+            em.close();
         }
-        return null;
     }
 
     public void addPerson(Person person) {
-        person.setId(++PERSON_ID);
-        people.add(person);
+        EntityManager em = factory.createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        tx.begin();
+        em.persist(person);
+        tx.commit();
+        em.close();
     }
 
     public void updatePerson(int id, Person person) {
-        Person p = getPersonById(id);
+        EntityManager em = factory.createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        tx.begin();
+        Person p = em.find(Person.class, id);
         p.setName(person.getName());
         p.setSurname(person.getSurname());
         p.setEmail(person.getEmail());
-
+        em.merge(person);
+        tx.commit();
+        em.close();
     }
 
     public void deletePerson(int id) {
-        Person p = getPersonById(id);
-        people.remove(p);
+        EntityManager em = factory.createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        tx.begin();
+        Person p = em.find(Person.class, id);
+        em.remove(p);
+        tx.commit();
+        em.close();
     }
 
 
