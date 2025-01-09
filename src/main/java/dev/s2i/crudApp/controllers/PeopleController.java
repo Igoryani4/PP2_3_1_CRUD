@@ -14,7 +14,7 @@ import javax.validation.Valid;
 
 
 @Controller
-@RequestMapping("/people")
+//@RequestMapping("/people")
 public class PeopleController {
 
     private final PersonDAO personDAO;
@@ -26,24 +26,24 @@ public class PeopleController {
     }
 
     @Transactional
-    @GetMapping()
+    @GetMapping("/people")
     public String index(Model model) {
         model.addAttribute("people", personDAO.getPeople());
         return "people/index";
     }
 
-    @GetMapping("/{id}")
-    public String show(@PathVariable ("id") int id, Model model) {
+    @GetMapping("/person")//show person by Id
+    public String show(@RequestParam (value = "id")int id, Model model) {
         model.addAttribute("person", personDAO.getPersonById(id));
         return "people/show";
     }
 
-    @GetMapping("/new")
+    @GetMapping("/person/new")
     public String newPerson(Model model, Person person) {
         return "people/new";
     }
 
-    @PostMapping()
+    @PostMapping("/people")
     public String create(@ModelAttribute("person") @Valid Person person, BindingResult result) {
         if (result.hasErrors()) {
             return "people/new";
@@ -52,15 +52,16 @@ public class PeopleController {
         return "redirect:/people";
     }
 
-    @GetMapping("/{id}/edit")
-    public String edit(@PathVariable ("id") int id, Model model) {
+    @GetMapping("/person/edit")
+    public String edit(@RequestParam (value = "id")int id, Model model) {
         model.addAttribute("person", personDAO.getPersonById(id));
         return "people/edit";
     }
 
-    @PatchMapping("/{id}")
+    @PatchMapping( "/people")
+//    @RequestMapping(path = "/people", method = {RequestMethod.GET, RequestMethod.PUT})
     public String update(@ModelAttribute("person") @Valid Person person, BindingResult result,
-                         @PathVariable ("id") int id) {
+                         @RequestParam (value = "id")int id) {
         if (result.hasErrors()) {
             return "people/edit";
         }
@@ -68,8 +69,8 @@ public class PeopleController {
         return "redirect:/people";
     }
 
-    @DeleteMapping("/{id}")
-    public String delete(@PathVariable ("id") int id) {
+    @DeleteMapping("/people")
+    public String delete(@RequestParam (value = "id")int id) {
         personDAO.deletePerson(id);
         return "redirect:/people";
     }
